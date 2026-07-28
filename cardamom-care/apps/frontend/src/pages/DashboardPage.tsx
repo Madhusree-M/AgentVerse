@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSkeleton } from '@/components/ui/loading-component';
 import { useLiveWeather, useWeatherRiskAgent, useWeatherHistory } from '@/hooks/use-weather-telemetry';
+import { useSwarm } from '@/hooks/use-swarm';
 
 const yieldForecast = [
   { month: 'Jun', harvest: 420 },
@@ -46,10 +47,16 @@ export function DashboardPage() {
   const { data: weatherData, isLoading: isLoadingWeather } = useLiveWeather();
   const { data: agentData, isLoading: isLoadingAgent } = useWeatherRiskAgent();
   const { data: historyData, isLoading: isLoadingHistory } = useWeatherHistory(selectedPeriod);
+  
+  const { liveWeather, liveDisease } = useSwarm();
 
-  const current = weatherData?.current;
+  const current = liveWeather?.data?.current || weatherData?.current;
   const location = weatherData?.location;
-  const risk = agentData?.risk_analysis;
+  
+  // Real Disease Agent Data
+  const diseaseInfo = liveDisease?.data;
+  const fungalRisk = diseaseInfo?.severity || 'Low';
+  const riskScore = diseaseInfo?.risk_percentage || 15;
 
   return (
     <div className="space-y-8">
@@ -68,19 +75,19 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           title="Relative Humidity"
-          value={`${current?.humidity_percent ?? 84}%`}
-          change={current && current.humidity_percent > 80 ? '+2.1%' : '0%'}
-          trend={current && current.humidity_percent > 80 ? 'up' : 'neutral'}
+          value={`${current?.relative_humidity_2m ?? current?.humidity_percent ?? 84}%`}
+          change={current && (current.relative_humidity_2m > 80 || current.humidity_percent > 80) ? '+2.1%' : '0%'}
+          trend={current && (current.relative_humidity_2m > 80 || current.humidity_percent > 80) ? 'up' : 'neutral'}
           trendLabel="Canopy dew point target"
           icon={Droplets}
           iconColor="text-sky-400 bg-sky-500/10 border-sky-500/20"
         />
         <StatCard
           title="Ambient Temp"
-          value={`${current?.temperature_celsius ?? 24.5}°C`}
-          change={`${current?.wind_speed_kmh ?? 12} km/h wind`}
+          value={`${current?.temperature_2m ?? current?.temperature_celsius ?? 24.5}°C`}
+          change={`${current?.wind_speed_10m ?? current?.wind_speed_kmh ?? 12} km/h wind`}
           trend="neutral"
-          trendLabel={`At ${location?.name}`}
+          trendLabel={`At ${location?.name || 'Idukki'}`}
           icon={CloudSun}
           iconColor="text-amber-400 bg-amber-500/10 border-amber-500/20"
         />
@@ -94,13 +101,13 @@ export function DashboardPage() {
           iconColor="text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
         />
         <StatCard
-          title="Fungal Spore Risk"
-          value={risk?.fungal_spore_risk || 'Low'}
-          change={`Score: ${risk?.overall_risk_score ?? 15}/100`}
-          trend={risk?.fungal_spore_risk === 'High' ? 'down' : 'neutral'}
-          trendLabel="Agentverse Guarded"
+          title="Disease Risk Score"
+          value={diseaseInfo?.disease_name || "Healthy"}
+          change={`Risk: ${riskScore}%`}
+          trend={fungalRisk === 'HIGH' ? 'down' : 'neutral'}
+          trendLabel={fungalRisk}
           icon={ShieldAlert}
-          iconColor="text-teal-400 bg-teal-500/10 border-teal-500/20"
+          iconColor={fungalRisk === 'HIGH' ? "text-rose-400 bg-rose-500/10 border-rose-500/20" : "text-teal-400 bg-teal-500/10 border-teal-500/20"}
         />
       </div>
 
@@ -170,23 +177,24 @@ export function DashboardPage() {
             description="Autonomous multi-agent task triggers for precision crop care"
           >
             <div className="space-y-4">
-              {agentData?.recommended_actions ? (
-                agentData.recommended_actions.map((act, i) => (
-                  <div key={i} className="p-4 rounded-xl bg-slate-950/60 border border-emerald-500/30 flex items-start gap-4">
-                    <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-                      <Droplets className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-sm text-slate-100">{agentData.agent_name}</span>
-                        <Badge variant="emerald">Live Agent Trigger</Badge>
-                      </div>
-                      <p className="text-xs text-slate-300 mt-1">{act}</p>
-                    </div>
+              {diseaseInfo?.recommendation ? (
+                <div className="p-4 rounded-xl bg-slate-950/60 border border-emerald-500/30 flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                    <Droplets className="w-5 h-5" />
                   </div>
-                ))
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm text-slate-100">Real Disease Agent</span>
+                      <Badge variant="emerald">Live Agent Trigger</Badge>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1">{diseaseInfo.recommendation}</p>
+                    {diseaseInfo.inspection_priority && (
+                       <p className="text-xs text-rose-400 mt-1 font-bold">Priority: {diseaseInfo.inspection_priority}</p>
+                    )}
+                  </div>
+                </div>
               ) : (
-                <div className="p-4 text-xs text-slate-400">Loading live agent triggers...</div>
+                <div className="p-4 text-xs text-slate-400">Waiting for live agent triggers...</div>
               )}
             </div>
           </SectionCard>

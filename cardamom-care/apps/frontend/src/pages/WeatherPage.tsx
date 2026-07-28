@@ -55,17 +55,37 @@ export function WeatherPage() {
   const { data: agentData, isLoading: isLoadingAgent, refetch: refetchAgent } = useWeatherRiskAgent(coords.lat, coords.lon);
   const { data: searchResults } = useLocationSearch(searchQuery);
 
-  const handleSelectLocation = (lat: number, lon: number) => {
+  const handleSelectLocation = async (lat: number, lon: number) => {
     setCoords({ lat, lon });
     setShowLocationDropdown(false);
     setSearchQuery('');
+    try {
+      await fetch('http://localhost:8000/api/weather/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat, lon })
+      });
+    } catch (e) {
+      console.error('Failed to update weather agent location', e);
+    }
   };
 
   const handleUseCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          setCoords({ lat, lon });
+          try {
+            await fetch('http://localhost:8000/api/weather/location', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ lat, lon })
+            });
+          } catch (e) {
+            console.error('Failed to update weather agent location', e);
+          }
         },
         (err) => {
           console.warn('Geolocation denied or failed', err);
