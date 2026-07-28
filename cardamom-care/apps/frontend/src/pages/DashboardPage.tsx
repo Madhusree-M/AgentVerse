@@ -1,0 +1,223 @@
+import React, { useState } from 'react';
+import {
+  Sprout,
+  Droplets,
+  CloudSun,
+  TrendingUp,
+  FlaskConical,
+  Zap,
+  ArrowRight,
+  ShieldAlert,
+  MapPin,
+  RefreshCw,
+} from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  BarChart,
+  Bar,
+} from 'recharts';
+import { PageHeader } from '@/components/ui/page-header';
+import { StatCard } from '@/components/ui/stat-card';
+import { SectionCard } from '@/components/ui/section-card';
+import { ChartCard } from '@/components/ui/chart-card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { LoadingSkeleton } from '@/components/ui/loading-component';
+import { useLiveWeather, useWeatherRiskAgent, useWeatherHistory } from '@/hooks/use-weather-telemetry';
+
+const yieldForecast = [
+  { month: 'Jun', harvest: 420 },
+  { month: 'Jul', harvest: 510 },
+  { month: 'Aug', harvest: 680 },
+  { month: 'Sep', harvest: 840 },
+  { month: 'Oct', harvest: 910 },
+  { month: 'Nov', harvest: 730 },
+];
+
+export function DashboardPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState('7D');
+
+  const { data: weatherData, isLoading: isLoadingWeather } = useLiveWeather();
+  const { data: agentData, isLoading: isLoadingAgent } = useWeatherRiskAgent();
+  const { data: historyData, isLoading: isLoadingHistory } = useWeatherHistory(selectedPeriod);
+
+  const current = weatherData?.current;
+  const location = weatherData?.location;
+  const risk = agentData?.risk_analysis;
+
+  return (
+    <div className="space-y-8">
+      {/* Page Header */}
+      <PageHeader
+        title="Precision Cardamom Dashboard"
+        description={`Real-time Open-Meteo microclimate stream & Agentverse Swarm analytics for ${location?.name || 'Idukki High-Range'}.`}
+        badgeText="Swarm Active"
+      >
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <RefreshCw className="w-4 h-4" /> Refresh Stream
+        </Button>
+      </PageHeader>
+
+      {/* Top 4 Live Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <StatCard
+          title="Relative Humidity"
+          value={`${current?.humidity_percent ?? 84}%`}
+          change={current && current.humidity_percent > 80 ? '+2.1%' : '0%'}
+          trend={current && current.humidity_percent > 80 ? 'up' : 'neutral'}
+          trendLabel="Canopy dew point target"
+          icon={Droplets}
+          iconColor="text-sky-400 bg-sky-500/10 border-sky-500/20"
+        />
+        <StatCard
+          title="Ambient Temp"
+          value={`${current?.temperature_celsius ?? 24.5}°C`}
+          change={`${current?.wind_speed_kmh ?? 12} km/h wind`}
+          trend="neutral"
+          trendLabel={`At ${location?.name}`}
+          icon={CloudSun}
+          iconColor="text-amber-400 bg-amber-500/10 border-amber-500/20"
+        />
+        <StatCard
+          title="Season Forecast"
+          value="4,090 kg"
+          change="+14.2%"
+          trend="up"
+          trendLabel="vs last season"
+          icon={TrendingUp}
+          iconColor="text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+        />
+        <StatCard
+          title="Fungal Spore Risk"
+          value={risk?.fungal_spore_risk || 'Low'}
+          change={`Score: ${risk?.overall_risk_score ?? 15}/100`}
+          trend={risk?.fungal_spore_risk === 'High' ? 'down' : 'neutral'}
+          trendLabel="Agentverse Guarded"
+          icon={ShieldAlert}
+          iconColor="text-teal-400 bg-teal-500/10 border-teal-500/20"
+        />
+      </div>
+
+      {/* Dynamic Telemetry & Period Filter Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Telemetry Chart connected to Open-Meteo Period Trends */}
+        <div className="lg:col-span-2">
+          <ChartCard
+            title={`Microclimate Trends (${selectedPeriod})`}
+            description={`Live humidity (%) and temperature (°C) for ${location?.name} • Select 24H, 7D, 30D, 1Y to switch period`}
+            periods={['24H', '7D', '30D', '1Y']}
+            onPeriodChange={(period) => setSelectedPeriod(period)}
+          >
+            {isLoadingHistory ? (
+              <LoadingSkeleton className="h-full w-full" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={historyData || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorHumidity" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
+                  <YAxis stroke="#94a3b8" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
+                    formatter={(val: any, name: string) => [`${val} ${name.includes('Temp') ? '°C' : '%'}`, name]}
+                  />
+                  <Area type="monotone" dataKey="humidity" stroke="#10b981" fillOpacity={1} fill="url(#colorHumidity)" name="Relative Humidity (%)" />
+                  <Area type="monotone" dataKey="temp" stroke="#f59e0b" fillOpacity={1} fill="url(#colorTemp)" name="Temperature (°C)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+        </div>
+
+        {/* Harvest Forecast Bar Chart */}
+        <ChartCard
+          title="Monthly Harvest Forecast"
+          description="Yield predictions by scikit-learn models"
+          periods={['2026', '2025']}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={yieldForecast} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
+              <YAxis stroke="#94a3b8" fontSize={12} />
+              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
+              <Bar dataKey="harvest" fill="#10b981" radius={[4, 4, 0, 0]} name="Harvest (kg)" />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
+
+      {/* Multi-Agent Recommendations & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <SectionCard
+            title="Agentverse Swarm Live Recommendations"
+            description="Autonomous multi-agent task triggers for precision crop care"
+          >
+            <div className="space-y-4">
+              {agentData?.recommended_actions ? (
+                agentData.recommended_actions.map((act, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-slate-950/60 border border-emerald-500/30 flex items-start gap-4">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                      <Droplets className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-sm text-slate-100">{agentData.agent_name}</span>
+                        <Badge variant="emerald">Live Agent Trigger</Badge>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-1">{act}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-xs text-slate-400">Loading live agent triggers...</div>
+              )}
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* Quick Farm Status Overview */}
+        <SectionCard title="Active Farm Plots" description="Status of monitored cardamom zones">
+          <div className="space-y-3">
+            {[
+              { name: 'Plot #1 - Njallani Gold', size: '4.5 Acres', status: 'Optimal', health: '98%' },
+              { name: 'Plot #2 - Malabar High', size: '3.2 Acres', status: 'Optimal', health: '94%' },
+              { name: 'Plot #3 - Vazhukka Shade', size: '5.0 Acres', status: 'Active', health: '91%' },
+              { name: 'Plot #4 - Yelagiri West', size: '2.8 Acres', status: 'Optimal', health: '96%' },
+            ].map((plot, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-950/40 border border-slate-800">
+                <div className="flex items-center gap-3">
+                  <Sprout className="w-4 h-4 text-emerald-400" />
+                  <div>
+                    <p className="text-xs font-semibold text-slate-200">{plot.name}</p>
+                    <p className="text-[10px] text-slate-400">{plot.size}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-emerald-400">{plot.health}</span>
+                  <p className="text-[10px] text-slate-400">{plot.status}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      </div>
+    </div>
+  );
+}
