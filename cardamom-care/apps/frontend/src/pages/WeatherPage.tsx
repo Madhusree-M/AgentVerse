@@ -274,19 +274,19 @@ export function WeatherPage() {
             <span className="font-semibold text-slate-400 flex items-center gap-1">
               <Info className="w-3.5 h-3.5 text-emerald-400" /> Graph Lines Explained:
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-              🟠 Max Temp (°C)
+            <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" /> Max Temp (°C)
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-medium">
-              🔵 Min Temp (°C)
+            <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-sky-400" /> Min Temp (°C)
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-              🟢 Expected Rainfall (mm)
+            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" /> Expected Rainfall (mm)
             </span>
           </div>
 
           {/* Recharts Line Graph */}
-          <div className="flex-1 min-h-[220px]">
+          <div className="flex-1 min-h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -299,7 +299,6 @@ export function WeatherPage() {
                     name,
                   ]}
                 />
-                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
                 <Line type="monotone" dataKey="tempMax" stroke="#f59e0b" strokeWidth={2.5} name="Max Temperature (°C)" />
                 <Line type="monotone" dataKey="tempMin" stroke="#38bdf8" strokeWidth={2.5} name="Min Temperature (°C)" />
                 <Line type="monotone" dataKey="precip" stroke="#10b981" strokeWidth={2.5} name="Rainfall (mm)" />

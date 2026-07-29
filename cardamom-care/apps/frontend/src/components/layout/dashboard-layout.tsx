@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './sidebar';
 import { Navbar } from './navbar';
+import { AgentVerseSwarmBar } from './agentverse-swarm-bar';
 import { cn } from '@/lib/utils';
 
 export function DashboardLayout() {
@@ -9,7 +10,7 @@ export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 pb-12">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
@@ -31,7 +32,7 @@ export function DashboardLayout() {
       {/* Main Content Area */}
       <main
         className={cn(
-          'flex-1 p-4 sm:p-8 transition-all duration-300',
+          'flex-1 p-4 sm:p-8 transition-all duration-300 mb-10',
           collapsed ? 'lg:pl-24' : 'lg:pl-72'
         )}
       >
@@ -39,6 +40,9 @@ export function DashboardLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Global AgentVerse Swarm Live Ticker & Console Bar */}
+      <AgentVerseSwarmBar sidebarCollapsed={collapsed} />
     </div>
   );
 }

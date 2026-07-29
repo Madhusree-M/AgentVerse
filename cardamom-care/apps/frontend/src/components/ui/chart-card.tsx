@@ -52,7 +52,7 @@ export function ChartCard({
           </div>
         )}
       </CardHeader>
-      <CardContent className="h-[280px] w-full pt-2">{children}</CardContent>
+      <CardContent className="h-[320px] w-full pt-2 pb-4">{children}</CardContent>
     </Card>
   );
 }

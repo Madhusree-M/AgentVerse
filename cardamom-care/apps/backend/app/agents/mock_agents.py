@@ -27,10 +27,10 @@ class MockAgent:
 
     async def _event_loop(self):
         while self.running:
-            await asyncio.sleep(10)
+            await asyncio.sleep(12)
             event_type = random.choice(self.events)
             
-            # For demonstration, pick a random receiver or broadcast
+            # Pick a random receiver or broadcast
             agents = coordinator.registry.get_all_agents()
             other_agents = [a for a in agents if a.id != self.agent_id]
             receiver = random.choice(other_agents).id if other_agents else "coordinator"
@@ -43,24 +43,29 @@ class MockAgent:
             )
 
 
-soil_agent = MockAgent(
-    "agent-soil", 
-    "SoilAgent", 
-    "Nutrient Balance", 
-    ["LOW_NITROGEN", "PH_IMBALANCE", "OPTIMAL_SOIL"]
+yield_agent = MockAgent(
+    "agent-yield", 
+    "Yield Prediction Agent", 
+    "Harvest Forecaster", 
+    ["YIELD_MODEL_UPDATED", "HARVEST_OPTIMAL", "DRY_SPELL_WARNING"]
 )
-irrigation_agent = MockAgent(
-    "agent-irrigation", 
-    "IrrigationAgent", 
-    "Moisture Control", 
-    ["LOW_SOIL_MOISTURE", "IRRIGATION_START", "IRRIGATION_STOP"]
+market_agent = MockAgent(
+    "agent-market", 
+    "Market Intelligence Agent", 
+    "Auction Rate Monitor", 
+    ["AUCTION_PRICE_PEAK", "DAILY_AVG_UPDATE", "GRADE_8MM_PREMIUM"]
+)
+harvest_agent = MockAgent(
+    "agent-harvest", 
+    "Harvest Planner Agent", 
+    "Picker & Pod Scheduler", 
+    ["PICKER_SCHEDULED", "DRYING_POD_ALLOCATED", "BATCH_READY"]
 )
 
 async def start_mock_agents():
-    # Wait a tiny bit for the system to boot up
     await asyncio.sleep(2)
-    await asyncio.sleep(2)
-    # Disease agent is now real
-    await soil_agent.start()
+    await yield_agent.start()
     await asyncio.sleep(1)
-    await irrigation_agent.start()
+    await market_agent.start()
+    await asyncio.sleep(1)
+    await harvest_agent.start()

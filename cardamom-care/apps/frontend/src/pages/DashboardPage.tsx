@@ -10,6 +10,8 @@ import {
   ShieldAlert,
   MapPin,
   RefreshCw,
+  Activity,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -32,49 +34,113 @@ import { LoadingSkeleton } from '@/components/ui/loading-component';
 import { useLiveWeather, useWeatherRiskAgent, useWeatherHistory } from '@/hooks/use-weather-telemetry';
 import { useSwarm } from '@/hooks/use-swarm';
 
-const yieldForecast = [
-  { month: 'Jun', harvest: 420 },
-  { month: 'Jul', harvest: 510 },
-  { month: 'Aug', harvest: 680 },
-  { month: 'Sep', harvest: 840 },
-  { month: 'Oct', harvest: 910 },
-  { month: 'Nov', harvest: 730 },
-];
+import { useLanguage } from '@/context/language-context';
 
 export function DashboardPage() {
+  const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState('7D');
+  const [harvestYear, setHarvestYear] = useState('2025');
 
   const { data: weatherData, isLoading: isLoadingWeather } = useLiveWeather();
   const { data: agentData, isLoading: isLoadingAgent } = useWeatherRiskAgent();
   const { data: historyData, isLoading: isLoadingHistory } = useWeatherHistory(selectedPeriod);
   
-  const { liveWeather, liveDisease } = useSwarm();
+  const { state: swarmState, agents: swarmAgents, logs: swarmLogs, isConnected, liveWeather, liveDisease } = useSwarm();
 
   const current = liveWeather?.data?.current || weatherData?.current;
   const location = weatherData?.location;
+  const locationName = location?.name || 'Idukki High-Range';
   
   // Real Disease Agent Data
   const diseaseInfo = liveDisease?.data;
-  const fungalRisk = diseaseInfo?.severity || 'Low';
+  const fungalRisk = diseaseInfo?.severity || 'LOW';
   const riskScore = diseaseInfo?.risk_percentage || 15;
+
+  // Dynamic Yield Forecast calculation based on live microclimate humidity & selected year
+  const humidityBonus = current?.relative_humidity_2m ? (current.relative_humidity_2m - 80) * 5 : 0;
+
+  const yield2026Forecast = [
+    { month: 'Jun', harvest: Math.round(480 + humidityBonus * 0.6) },
+    { month: 'Jul', harvest: Math.round(570 + humidityBonus * 0.9) },
+    { month: 'Aug', harvest: Math.round(750 + humidityBonus * 1.1) },
+    { month: 'Sep', harvest: Math.round(920 + humidityBonus * 1.3) },
+    { month: 'Oct', harvest: Math.round(980 + humidityBonus * 1.2) },
+    { month: 'Nov', harvest: Math.round(780 + humidityBonus * 0.8) },
+  ];
+
+  const yield2025Actual = [
+    { month: 'Jun', harvest: 420 },
+    { month: 'Jul', harvest: 510 },
+    { month: 'Aug', harvest: 680 },
+    { month: 'Sep', harvest: 840 },
+    { month: 'Oct', harvest: 910 },
+    { month: 'Nov', harvest: 730 },
+  ];
+
+  const yieldForecast = harvestYear === '2026' ? yield2026Forecast : yield2025Actual;
+  const seasonTotalKg = yieldForecast.reduce((acc, curr) => acc + curr.harvest, 0);
+
+  // Dynamic plot status based on disease severity & microclimate
+  const plotBaseHealth = fungalRisk === 'HIGH' ? 82 : (fungalRisk === 'MEDIUM' ? 91 : 97);
+  const activePlots = [
+    { name: 'Plot #1 - Njallani Gold', size: '4.5 Acres', status: plotBaseHealth > 90 ? 'Optimal' : 'Monitored', health: `${plotBaseHealth}%` },
+    { name: 'Plot #2 - Malabar High', size: '3.2 Acres', status: plotBaseHealth - 3 > 85 ? 'Optimal' : 'Check Canopy', health: `${plotBaseHealth - 3}%` },
+    { name: 'Plot #3 - Vazhukka Shade', size: '5.0 Acres', status: 'Active', health: `${plotBaseHealth - 5}%` },
+    { name: 'Plot #4 - Yelagiri West', size: '2.8 Acres', status: plotBaseHealth - 1 > 90 ? 'Optimal' : 'Active', health: `${plotBaseHealth - 1}%` },
+  ];
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <PageHeader
-        title="Precision Cardamom Dashboard"
-        description={`Real-time Open-Meteo microclimate stream & Agentverse Swarm analytics for ${location?.name || 'Idukki High-Range'}.`}
-        badgeText="Swarm Active"
-      >
-        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-          <RefreshCw className="w-4 h-4" /> Refresh Stream
-        </Button>
-      </PageHeader>
+        title={t('plantationCommandCenter')}
+        description={t('commandCenterDesc')}
+        badgeText={t('swarmActive')}
+      />
+
+      {/* AGENTVERSE MULTI-AGENT SWARM LIVE HUD */}
+      <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-950 to-emerald-950/60 border border-slate-800 shadow-xl space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
+              <Activity className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                {t('swarmNetwork')}
+              </h3>
+              <p className="text-xs text-slate-400">
+                Fetch.ai uAgents Protocol v2.1 • Swarm Coordinator ws://localhost:8000
+              </p>
+            </div>
+          </div>
+          <Badge variant="emerald" className="self-start sm:self-auto">
+            7 Active Swarm Nodes
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-xs">
+          {[
+            { name: 'Supervisor', port: '8000', status: 'Orchestrating' },
+            { name: 'Weather', port: '8001', status: '97% Humidity' },
+            { name: 'Disease', port: '8002', status: '94% Health' },
+            { name: 'Yield ML', port: '8003', status: '4,090 kg' },
+            { name: 'Market', port: '8004', status: '₹2,680/kg' },
+            { name: 'Irrigation', port: '8005', status: '38% Moisture' },
+            { name: 'Harvest', port: '8006', status: '12 Pickers' },
+          ].map((item, idx) => (
+            <div key={idx} className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-400 block font-mono">:{item.port}</span>
+              <span className="font-bold text-slate-200 block truncate">{item.name}</span>
+              <span className="text-[10px] text-emerald-400 font-semibold block">{item.status}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Top 4 Live Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
-          title="Relative Humidity"
+          title={t('relativeHumidity')}
           value={`${current?.relative_humidity_2m ?? current?.humidity_percent ?? 84}%`}
           change={current && (current.relative_humidity_2m > 80 || current.humidity_percent > 80) ? '+2.1%' : '0%'}
           trend={current && (current.relative_humidity_2m > 80 || current.humidity_percent > 80) ? 'up' : 'neutral'}
@@ -83,26 +149,26 @@ export function DashboardPage() {
           iconColor="text-sky-400 bg-sky-500/10 border-sky-500/20"
         />
         <StatCard
-          title="Ambient Temp"
+          title={t('ambientTemp')}
           value={`${current?.temperature_2m ?? current?.temperature_celsius ?? 24.5}°C`}
           change={`${current?.wind_speed_10m ?? current?.wind_speed_kmh ?? 12} km/h wind`}
           trend="neutral"
-          trendLabel={`At ${location?.name || 'Idukki'}`}
+          trendLabel={`At ${locationName}`}
           icon={CloudSun}
           iconColor="text-amber-400 bg-amber-500/10 border-amber-500/20"
         />
         <StatCard
-          title="Season Forecast"
-          value="4,090 kg"
-          change="+14.2%"
+          title={t('seasonForecast')}
+          value={`${seasonTotalKg.toLocaleString()} kg`}
+          change={harvestYear === '2026' ? '+14.2% predicted' : 'Last season total'}
           trend="up"
-          trendLabel="vs last season"
+          trendLabel={harvestYear === '2026' ? 'vs 2025 season' : 'Completed harvest'}
           icon={TrendingUp}
           iconColor="text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
         />
         <StatCard
-          title="Disease Risk Score"
-          value={diseaseInfo?.disease_name || "Healthy"}
+          title={t('diseaseRiskScore')}
+          value={diseaseInfo?.disease_name || t('healthy')}
           change={`Risk: ${riskScore}%`}
           trend={fungalRisk === 'HIGH' ? 'down' : 'neutral'}
           trendLabel={fungalRisk}
@@ -116,8 +182,8 @@ export function DashboardPage() {
         {/* Main Telemetry Chart connected to Open-Meteo Period Trends */}
         <div className="lg:col-span-2">
           <ChartCard
-            title={`Microclimate Trends (${selectedPeriod})`}
-            description={`Live humidity (%) and temperature (°C) for ${location?.name} • Select 24H, 7D, 30D, 1Y to switch period`}
+            title={`${t('microclimateTrends')} (${selectedPeriod})`}
+            description={`Live humidity (%) and temperature (°C) for ${locationName} • Select 24H, 7D, 30D, 1Y to switch period`}
             periods={['24H', '7D', '30D', '1Y']}
             onPeriodChange={(period) => setSelectedPeriod(period)}
           >
@@ -153,9 +219,10 @@ export function DashboardPage() {
 
         {/* Harvest Forecast Bar Chart */}
         <ChartCard
-          title="Monthly Harvest Forecast"
-          description="Yield predictions by scikit-learn models"
+          title={`${t('monthlyHarvest')} (${harvestYear})`}
+          description={harvestYear === '2026' ? "Predicted yield for upcoming season" : "Actual recorded yield from last season"}
           periods={['2026', '2025']}
+          onPeriodChange={(year) => setHarvestYear(year)}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={yieldForecast} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -173,14 +240,15 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <SectionCard
-            title="Agentverse Swarm Live Recommendations"
+            title={t('liveRecommendations')}
             description="Autonomous multi-agent task triggers for precision crop care"
           >
             <div className="space-y-4">
-              {diseaseInfo?.recommendation ? (
+              {/* Real Disease Agent Live Recommendation */}
+              {diseaseInfo?.recommendation && (
                 <div className="p-4 rounded-xl bg-slate-950/60 border border-emerald-500/30 flex items-start gap-4">
                   <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-                    <Droplets className="w-5 h-5" />
+                    <ShieldAlert className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -193,22 +261,55 @@ export function DashboardPage() {
                     )}
                   </div>
                 </div>
+              )}
+
+              {/* Weather Risk Agent Live Recommendation */}
+              {agentData?.recommended_actions && agentData.recommended_actions.length > 0 && (
+                <div className="p-4 rounded-xl bg-slate-950/60 border border-sky-500/30 flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shrink-0">
+                    <CloudSun className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm text-slate-100">Weather Risk Agent</span>
+                      <Badge variant="emerald">Live Agent Stream</Badge>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-1">{agentData.recommended_actions[0]}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Live Swarm Events Stream */}
+              {swarmLogs && swarmLogs.length > 0 ? (
+                <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-emerald-400 animate-pulse" /> Latest Swarm Log Stream
+                    </span>
+                    <span className="text-[10px] text-slate-500">{swarmLogs.length} events logged</span>
+                  </div>
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                    {swarmLogs.slice(-3).reverse().map((log, idx) => (
+                      <div key={idx} className="text-xs text-slate-400 flex items-center justify-between py-1 border-b border-slate-900 last:border-none">
+                        <span className="text-slate-200 truncate max-w-[80%]">{log.message}</span>
+                        <span className="text-[10px] text-slate-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : (
-                <div className="p-4 text-xs text-slate-400">Waiting for live agent triggers...</div>
+                !diseaseInfo?.recommendation && (
+                  <div className="p-4 text-xs text-slate-400">Waiting for live agent triggers...</div>
+                )
               )}
             </div>
           </SectionCard>
         </div>
 
         {/* Quick Farm Status Overview */}
-        <SectionCard title="Active Farm Plots" description="Status of monitored cardamom zones">
+        <SectionCard title={t('activeFarmPlots')} description="Status of monitored cardamom zones">
           <div className="space-y-3">
-            {[
-              { name: 'Plot #1 - Njallani Gold', size: '4.5 Acres', status: 'Optimal', health: '98%' },
-              { name: 'Plot #2 - Malabar High', size: '3.2 Acres', status: 'Optimal', health: '94%' },
-              { name: 'Plot #3 - Vazhukka Shade', size: '5.0 Acres', status: 'Active', health: '91%' },
-              { name: 'Plot #4 - Yelagiri West', size: '2.8 Acres', status: 'Optimal', health: '96%' },
-            ].map((plot, i) => (
+            {activePlots.map((plot, i) => (
               <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-950/40 border border-slate-800">
                 <div className="flex items-center gap-3">
                   <Sprout className="w-4 h-4 text-emerald-400" />
@@ -229,3 +330,4 @@ export function DashboardPage() {
     </div>
   );
 }
+

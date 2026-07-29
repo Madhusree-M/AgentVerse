@@ -5,8 +5,6 @@ import {
   Trees,
   CloudSun,
   Bug,
-  FlaskConical,
-  Droplets,
   TrendingUp,
   Store,
   CalendarCheck,
@@ -17,30 +15,33 @@ import {
   ChevronRight,
   Sprout,
   Sparkles,
+  BellRing,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/context/language-context';
 
 export interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
 }
 
-export const navigationItems = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Farms', path: '/farms', icon: Trees, badge: '4 Plots' },
-  { name: 'Weather', path: '/weather', icon: CloudSun },
-  { name: 'Disease Monitoring', path: '/disease', icon: Bug, badgeAlert: true },
-  { name: 'Soil Health', path: '/soil', icon: FlaskConical },
-  { name: 'Irrigation', path: '/irrigation', icon: Droplets, badge: 'Auto' },
-  { name: 'Yield Prediction', path: '/yield', icon: TrendingUp },
-  { name: 'Market Intelligence', path: '/market', icon: Store },
-  { name: 'Harvest Planner', path: '/harvest', icon: CalendarCheck },
-  { name: 'Agent Monitor', path: '/agents', icon: Bot, isAgent: true },
-  { name: 'Simulation', path: '/simulation', icon: Cpu },
-  { name: 'Settings', path: '/settings', icon: Settings },
+export const rawNavigationItems = [
+  { key: 'dashboard', name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { key: 'farms', name: 'Farms', path: '/farms', icon: Trees, badge: '4 Plots' },
+  { key: 'weather', name: 'Weather', path: '/weather', icon: CloudSun },
+  { key: 'diseaseMonitoring', name: 'Disease Monitoring', path: '/disease', icon: Bug, badgeAlert: true },
+  { key: 'yieldPrediction', name: 'Yield Prediction', path: '/yield', icon: TrendingUp },
+  { key: 'marketIntelligence', name: 'Market Intelligence', path: '/market', icon: Store },
+  { key: 'priceAlerts', name: 'Price Alerts & AI', path: '/price-alert', icon: BellRing },
+  { key: 'harvestPlanner', name: 'Harvest Planner', path: '/harvest', icon: CalendarCheck },
+  { key: 'agentMonitor', name: 'Agent Monitor', path: '/agents', icon: Bot, isAgent: true },
+  { key: 'simulation', name: 'Simulation', path: '/simulation', icon: Cpu },
+  { key: 'settings', name: 'Settings', path: '/settings', icon: Settings },
 ];
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+  const { t } = useLanguage();
+
   return (
     <aside
       className={cn(
@@ -78,8 +79,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
         {/* Navigation List */}
         <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none">
-          {navigationItems.map((item) => {
+          {rawNavigationItems.map((item) => {
             const Icon = item.icon;
+            const translatedName = t(item.key) || item.name;
+
             return (
               <NavLink
                 key={item.path}
@@ -101,7 +104,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                         isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-200'
                       )}
                     />
-                    {!collapsed && <span className="truncate">{item.name}</span>}
+                    {!collapsed && <span className="truncate">{translatedName}</span>}
 
                     {/* Badges */}
                     {!collapsed && item.badge && (
