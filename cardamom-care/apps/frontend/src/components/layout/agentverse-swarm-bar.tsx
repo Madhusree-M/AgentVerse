@@ -13,7 +13,7 @@ export function AgentVerseSwarmBar({ sidebarCollapsed }: { sidebarCollapsed: boo
     { name: 'Disease Sentinel Agent', address: 'agent1q4r...disease', port: 8002, status: 'ONLINE', role: 'Leaf Diagnostic & History' },
     { name: 'RandomForest Yield Agent', address: 'agent1q5t...yield', port: 8003, status: 'ONLINE', role: 'Scikit Yield Prediction' },
     { name: 'Spices Board Arbitrage Agent', address: 'agent1q6y...market', port: 8004, status: 'ONLINE', role: 'E-Auction Rate Engine' },
-    { name: 'Precision Irrigation Agent', address: 'agent1q7u...soil', port: 8005, status: 'ONLINE', role: 'Soil & Canopy Controller' },
+    { name: 'Growth Guide Agronomy Agent', address: 'agent1q7u...agronomy', port: 8005, status: 'ONLINE', role: 'Growth Stage & Medicine Advisor' },
     { name: 'Harvest Scheduler Agent', address: 'agent1q8i...harvest', port: 8006, status: 'ONLINE', role: 'Picker Route Planner' },
   ];
 
@@ -68,19 +68,20 @@ export function AgentVerseSwarmBar({ sidebarCollapsed }: { sidebarCollapsed: boo
             <span className="text-xs text-slate-400 font-mono">uAgents Communication Protocol: Connected</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
             {agentsList.map((agent, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-100 truncate">{agent.name}</span>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold">
+              <div key={idx} className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5 relative overflow-hidden flex flex-col justify-between hover:border-sky-500/60 transition-all">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-sky-500" />
+                <div className="flex items-center justify-between pt-1">
+                  <span className="font-extrabold text-slate-100 truncate">{agent.name}</span>
+                  <span className="px-2 py-0.5 rounded-md border text-[10px] font-mono font-bold bg-sky-500/10 text-sky-400 border-sky-500/20">
                     {agent.status}
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono truncate">{agent.address}</div>
                 <div className="flex justify-between text-[11px] text-slate-300 pt-1 border-t border-slate-800/60">
                   <span className="text-slate-400">Role:</span>
-                  <span className="text-emerald-400 font-semibold">{agent.role}</span>
+                  <span className="font-semibold text-sky-400">{agent.role}</span>
                 </div>
               </div>
             ))}

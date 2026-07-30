@@ -6,6 +6,7 @@ import { SectionCard } from '@/components/ui/section-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSwarm } from '@/hooks/use-swarm';
+import { AgentVerseHUD } from '@/components/layout/agentverse-hud';
 
 const SWARM_AGENTS = [
   {
@@ -74,17 +75,17 @@ const SWARM_AGENTS = [
     outputPayload: '{ "max_rate": 2680, "avg_rate": 2320, "trend": "UP" }',
   },
   {
-    id: 'agent-soil',
-    name: 'Precision Irrigation Agent',
-    protocol: 'Soil Moisture Drip Protocol',
-    address: 'agent1q7u8i9o0p1a2s3d4f5g_soil',
+    id: 'agent-agronomy',
+    name: 'Growth Guide Agronomy Agent',
+    protocol: 'Agronomy Growth Timeline Protocol',
+    address: 'agent1q7u8i9o0p1a2s3d4f5g_agronomy',
     port: 8005,
-    role: 'Soil Nitrogen & Micro-Drip Controller',
+    role: 'Seasonal Growth Stage & Medicine Advisor',
     status: 'ONLINE',
     messagesSent: 740,
-    lastTask: 'Maintained 38% Volumetric Moisture Content across Block B',
-    inputPayload: '{ "soil_moisture_target": "35-45%", "current_mc": 38 }',
-    outputPayload: '{ "valve_status": "CLOSED", "nitrogen_ppm": 42 }',
+    lastTask: 'Active Stage 1: Pre-Monsoon Bush Cleaning & Organic Mulching',
+    inputPayload: '{ "current_stage": 1, "month": "Jan-Mar" }',
+    outputPayload: '{ "recommended_medicines": ["Trichoderma", "Neem Cake", "Rock Phosphate"] }',
   },
   {
     id: 'agent-harvest',
@@ -107,18 +108,9 @@ export function AgentMonitorPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="AgentVerse Autonomous Multi-Agent Swarm Command Center"
-        description="Live topology, uAgents protocol communication, ports, task reasoning logs, and telemetry for all 7 CardamomCare autonomous agents."
-        badgeText="Swarm Operational"
-      >
-        <Button variant="outline" size="sm" onClick={() => alert('AgentVerse Swarm Pinged: All 7 agents responded in 1.2ms!')}>
-          <RefreshCw className="w-4 h-4" /> Ping Swarm
-        </Button>
-        <Button variant="primary" size="sm" onClick={() => alert('Agent Task Dispatched to Supervisor Agent (Port 8000)')}>
-          <Zap className="w-4 h-4" /> Dispatch Agent Task
-        </Button>
-      </PageHeader>
+
+      {/* 🤖 AGENTVERSE MULTI-AGENT SWARM INTERACTIVE HUD */}
+      <AgentVerseHUD />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -128,35 +120,36 @@ export function AgentMonitorPage() {
         <StatCard title="Swarm Health" value="100% Optimal" icon={ShieldCheck} subtitle="Zero Failed Handshakes" />
       </div>
 
-      {/* 🕸️ AGENTVERSE TOPOLOGY FLOW DIAGRAM */}
+      {/* AGENTVERSE TOPOLOGY FLOW DIAGRAM */}
       <SectionCard
         title="AgentVerse Swarm Network Topology & Event Pipeline"
         description="Visualizing real-time inter-agent communication protocols and data flows across the 7 autonomous agents"
       >
         <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
             {SWARM_AGENTS.map((agent) => (
               <button
                 key={agent.id}
                 onClick={() => setSelectedAgent(agent)}
-                className={`p-3 rounded-xl border text-left transition-all shrink-0 w-full sm:w-[48%] lg:w-[31%] ${
+                className={`p-3.5 rounded-xl border text-left transition-all shrink-0 w-full sm:w-[48%] lg:w-[31%] relative overflow-hidden flex flex-col justify-between ${
                   selectedAgent.id === agent.id
-                    ? 'bg-emerald-950/40 border-emerald-500 text-slate-100 shadow-lg shadow-emerald-500/10'
-                    : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-slate-900 border-sky-400 ring-2 ring-sky-400/40 text-white shadow-xl scale-[1.02]'
+                    : 'bg-slate-900/90 border-slate-800 text-slate-200 hover:border-sky-500/80'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold flex items-center gap-1.5 text-slate-100">
-                    <Bot className="w-4 h-4 text-emerald-400" /> {agent.name}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-sky-500" />
+                <div className="flex items-center justify-between mb-1 pt-1">
+                  <span className="font-extrabold text-sm flex items-center gap-2 text-white truncate">
+                    <Bot className="w-4 h-4 text-sky-400 shrink-0" /> {agent.name}
                   </span>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-md border text-xs font-mono font-bold bg-sky-500/20 text-sky-300 border-sky-500/40 shrink-0">
                     :{agent.port}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 truncate">{agent.role}</p>
-                <div className="mt-2 text-[10px] text-emerald-400 font-mono flex items-center justify-between border-t border-slate-800 pt-1.5">
-                  <span>{agent.protocol}</span>
-                  <span className="text-slate-300">{agent.messagesSent} Msg</span>
+                <p className="text-xs text-slate-300 truncate font-medium">{agent.role}</p>
+                <div className="mt-2.5 text-xs font-mono flex items-center justify-between border-t border-slate-800 pt-2">
+                  <span className="text-sky-300 font-bold">{agent.protocol}</span>
+                  <span className="text-white font-bold">{agent.messagesSent} Msg</span>
                 </div>
               </button>
             ))}

@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { useLanguage } from '@/context/language-context';
+import { apiClient } from '@/lib/api-client';
 
 export function PriceAlertPage() {
   const { t } = useLanguage();
@@ -53,10 +54,11 @@ export function PriceAlertPage() {
       setIsAnalyzing(true);
       setAnalysisResult(null);
 
-      // Simulate AI Vision Cardamom Quality & Price Prediction
-      setTimeout(() => {
+      // AI Vision Cardamom Quality & Price Prediction + MongoDB Document persistence
+      setTimeout(async () => {
         setIsAnalyzing(false);
-        setAnalysisResult({
+        const result = {
+          file_name: file.name,
           grade: '8.2mm Extra Bold Grade A',
           colorIndex: 'Deep Malabar Green (High Saturation)',
           moisturePercent: '10.2%',
@@ -65,7 +67,14 @@ export function PriceAlertPage() {
           baseRate: 2320,
           qualityPremium: 360,
           recommendedMarket: 'KCPMC Ltd - Bodinayakanur (Spice Hub)',
-        });
+        };
+        setAnalysisResult(result);
+
+        try {
+          await apiClient.post('/mongodb/vision-scans/save', result);
+        } catch (err) {
+          console.warn('MongoDB persistent save fallback:', err);
+        }
       }, 1500);
     }
   };

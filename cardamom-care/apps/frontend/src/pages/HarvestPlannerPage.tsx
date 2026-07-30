@@ -46,6 +46,26 @@ export function HarvestPlannerPage() {
         </Button>
       </PageHeader>
 
+      {/* AGENTVERSE HARVEST LOGISTICS PROTOCOL BANNER */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-fuchsia-950/80 via-slate-900 to-rose-950/40 border border-fuchsia-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/30 shrink-0">
+            <Users className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <h4 className="font-bold text-slate-100 text-sm flex items-center gap-2">
+              Agent #7: Harvest Logistics & Picker Route Agent (:8006)
+            </h4>
+            <p className="text-slate-300 text-[11px] font-mono mt-0.5">
+              Protocol: Labor Logistics & Rain Avoidance Route Planner • 12 Active Pickers Allocated
+            </p>
+          </div>
+        </div>
+        <div className="px-3 py-1 rounded-full bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/30 font-mono text-[11px] font-bold self-start sm:self-auto">
+          Route Planner Active
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Maturity Index" value="92% Ready" icon={CheckCircle2} subtitle="Block A Capsules deep green" />
         <StatCard title="Picking Rounds" value="5 Rounds" icon={CalendarCheck} subtitle="August to November 2026" />
@@ -70,14 +90,6 @@ export function HarvestPlannerPage() {
                 <p className="text-xs text-slate-300 mt-2">Maturity Status: <span className="font-semibold text-emerald-400">{r.maturity}</span></p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <Button variant="outline" size="sm">
-                  Adjust Dates
-                </Button>
-                <Button variant="secondary" size="sm">
-                  Assign Crew
-                </Button>
-              </div>
             </div>
           ))}
         </div>

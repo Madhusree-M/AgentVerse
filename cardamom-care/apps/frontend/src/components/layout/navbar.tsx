@@ -16,6 +16,8 @@ import {
 import { useTheme } from '@/context/theme-context';
 import { useLanguage } from '@/context/language-context';
 import { Language } from '@/lib/translations';
+import { useAuth } from '@/context/auth-context';
+import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +29,9 @@ export interface NavbarProps {
 export function Navbar({ sidebarCollapsed, onMobileToggle }: NavbarProps) {
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -139,101 +144,37 @@ export function Navbar({ sidebarCollapsed, onMobileToggle }: NavbarProps) {
           )}
         </div>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
-          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-        >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-300" />}
-        </button>
-
-        {/* Notifications Popover */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowNotifications(!showNotifications);
-              setShowProfileMenu(false);
-            }}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors relative"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-slate-950" />
-          </button>
-
-          {showNotifications && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl shadow-black/80 p-4 z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-                <span className="font-semibold text-sm text-slate-100 flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-emerald-400" /> Notifications
-                </span>
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  3 New
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition-colors text-left flex gap-3"
-                  >
-                    <div className="shrink-0 pt-0.5">
-                      {n.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-400" />}
-                      {n.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                      {n.type === 'info' && <ShieldCheck className="w-4 h-4 text-sky-400" />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-200">{n.title}</span>
-                        <span className="text-[10px] text-slate-500">{n.time}</span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{n.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="pt-3 mt-3 border-t border-slate-800 text-center">
-                <button
-                  onClick={() => setShowNotifications(false)}
-                  className="text-xs font-semibold text-emerald-400 hover:underline"
-                >
-                  Mark all as read
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* User Profile */}
         <div className="relative">
           <button
             onClick={() => {
               setShowProfileMenu(!showProfileMenu);
-              setShowNotifications(false);
             }}
             className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors"
           >
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-xs font-bold text-slate-950">
-              M
+              {user?.fullName?.charAt(0) || 'F'}
             </div>
-            <span className="hidden sm:inline text-xs font-semibold text-slate-200">Madhusree</span>
+            <span className="hidden sm:inline text-xs font-semibold text-slate-200">
+              {user?.fullName || 'Farmer Account'}
+            </span>
           </button>
 
           {showProfileMenu && (
             <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="px-3 py-2 border-b border-slate-800 mb-2">
-                <p className="text-xs font-bold text-slate-100">Madhusree M</p>
-                <p className="text-[10px] text-slate-400">Head Agronomist & Farm Owner</p>
+                <p className="text-xs font-bold text-slate-100">{user?.fullName || 'Cardamom Farmer'}</p>
+                <p className="text-[10px] text-slate-400 truncate">{user?.location || 'Bodinayakanur'}</p>
               </div>
               <div className="space-y-1">
-                <button className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2">
-                  <User className="w-4 h-4 text-emerald-400" /> Account Settings
-                </button>
-                <button className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" /> Farm Credentials
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    navigate('/profile');
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2 font-medium"
+                >
+                  <User className="w-4 h-4 text-emerald-400" /> Edit Profile & Location
                 </button>
               </div>
             </div>

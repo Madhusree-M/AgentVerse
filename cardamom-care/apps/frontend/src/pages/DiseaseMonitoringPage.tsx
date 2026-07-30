@@ -87,14 +87,34 @@ export function DiseaseMonitoringPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <PageHeader
-        title="🌿 Leaf Defect Scanner & Crop Health Predictor"
+        title="Leaf Defect Scanner & Crop Health Predictor"
         description="Select a farm plot, upload leaf photos with defects, and immediately update plot disease history and crop health scores."
         badgeText="Plot Health AI Active"
       />
 
-      {/* 🎯 FEATURE 1: Select Farm Plot & Predict Crop Health Index */}
+      {/* AGENTVERSE DISEASE SENTINEL PROTOCOL BANNER */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-rose-950/40 border border-amber-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 shrink-0">
+            <ShieldAlert className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <h4 className="font-bold text-slate-100 text-sm flex items-center gap-2">
+              Agent #3: Disease Sentinel & Leaf Scanner Agent (:8002)
+            </h4>
+            <p className="text-slate-300 text-[11px] font-mono mt-0.5">
+              Protocol: Fetch.ai Pathogen Protocol • Live Health Index Ledger Active
+            </p>
+          </div>
+        </div>
+        <Badge variant="emerald" className="self-start sm:self-auto font-mono text-[11px]">
+          Foliage Sentinel Active
+        </Badge>
+      </div>
+
+      {/* FEATURE 1: Select Farm Plot & Predict Crop Health Index */}
       <SectionCard
-        title="🎯 Select Farm Plot for Disease Analysis & Health Prediction"
+        title="Select Farm Plot for Disease Analysis & Health Prediction"
         description="Combines plot disease history, live satellite weather, and foliage diagnostics to predict crop health."
       >
         <div className="space-y-6">

@@ -34,6 +34,7 @@ import { LoadingSkeleton } from '@/components/ui/loading-component';
 import { useLiveWeather, useWeatherRiskAgent, useWeatherHistory } from '@/hooks/use-weather-telemetry';
 import { useSwarm } from '@/hooks/use-swarm';
 
+import { AgentVerseHUD } from '@/components/layout/agentverse-hud';
 import { useLanguage } from '@/context/language-context';
 
 export function DashboardPage() {
@@ -97,46 +98,6 @@ export function DashboardPage() {
         badgeText={t('swarmActive')}
       />
 
-      {/* AGENTVERSE MULTI-AGENT SWARM LIVE HUD */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-950 to-emerald-950/60 border border-slate-800 shadow-xl space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
-              <Activity className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                {t('swarmNetwork')}
-              </h3>
-              <p className="text-xs text-slate-400">
-                Fetch.ai uAgents Protocol v2.1 • Swarm Coordinator ws://localhost:8000
-              </p>
-            </div>
-          </div>
-          <Badge variant="emerald" className="self-start sm:self-auto">
-            7 Active Swarm Nodes
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-xs">
-          {[
-            { name: 'Supervisor', port: '8000', status: 'Orchestrating' },
-            { name: 'Weather', port: '8001', status: '97% Humidity' },
-            { name: 'Disease', port: '8002', status: '94% Health' },
-            { name: 'Yield ML', port: '8003', status: '4,090 kg' },
-            { name: 'Market', port: '8004', status: '₹2,680/kg' },
-            { name: 'Irrigation', port: '8005', status: '38% Moisture' },
-            { name: 'Harvest', port: '8006', status: '12 Pickers' },
-          ].map((item, idx) => (
-            <div key={idx} className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 block font-mono">:{item.port}</span>
-              <span className="font-bold text-slate-200 block truncate">{item.name}</span>
-              <span className="text-[10px] text-emerald-400 font-semibold block">{item.status}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Top 4 Live Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
@@ -182,10 +143,8 @@ export function DashboardPage() {
         {/* Main Telemetry Chart connected to Open-Meteo Period Trends */}
         <div className="lg:col-span-2">
           <ChartCard
-            title={`${t('microclimateTrends')} (${selectedPeriod})`}
-            description={`Live humidity (%) and temperature (°C) for ${locationName} • Select 24H, 7D, 30D, 1Y to switch period`}
-            periods={['24H', '7D', '30D', '1Y']}
-            onPeriodChange={(period) => setSelectedPeriod(period)}
+            title={t('microclimateTrends')}
+            description={`Live humidity (%) and temperature (°C) for ${locationName}`}
           >
             {isLoadingHistory ? (
               <LoadingSkeleton className="h-full w-full" />

@@ -16,6 +16,7 @@ import {
   Sprout,
   Sparkles,
   BellRing,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/language-context';
@@ -33,6 +34,7 @@ export const rawNavigationItems = [
   { key: 'yieldPrediction', name: 'Yield Prediction', path: '/yield', icon: TrendingUp },
   { key: 'marketIntelligence', name: 'Market Intelligence', path: '/market', icon: Store },
   { key: 'priceAlerts', name: 'Price Alerts & AI', path: '/price-alert', icon: BellRing },
+  { key: 'growthGuide', name: 'Growth Guide', path: '/growth-guide', icon: BookOpen },
   { key: 'harvestPlanner', name: 'Harvest Planner', path: '/harvest', icon: CalendarCheck },
   { key: 'agentMonitor', name: 'Agent Monitor', path: '/agents', icon: Bot, isAgent: true },
   { key: 'simulation', name: 'Simulation', path: '/simulation', icon: Cpu },

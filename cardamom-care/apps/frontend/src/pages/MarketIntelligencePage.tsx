@@ -62,6 +62,26 @@ export function MarketIntelligencePage() {
         badgeText={`Live Auction ${selectedYear}`}
       />
 
+      {/* AGENTVERSE MARKET ARBITRAGE PROTOCOL BANNER */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-yellow-950/80 via-slate-900 to-amber-950/40 border border-yellow-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 shrink-0">
+            <Store className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <h4 className="font-bold text-slate-100 text-sm flex items-center gap-2">
+              Agent #5: Spices Board Market Arbitrage Agent (:8004)
+            </h4>
+            <p className="text-slate-300 text-[11px] font-mono mt-0.5">
+              Protocol: Spices Board India E-Auction Stream • Bodinayakanur Max Rate: ₹2,680/kg
+            </p>
+          </div>
+        </div>
+        <div className="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-mono text-[11px] font-bold self-start sm:self-auto">
+          E-Auction Engine Active
+        </div>
+      </div>
+
       {/* Top 4 Market Metrics Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard

@@ -49,7 +49,39 @@ export function YieldPredictionPage() {
     weightKg: '',
   });
 
-  const handleLogHarvest = (e: React.FormEvent) => {
+  // Fetch live persistent harvest entries from MongoDB on mount
+  React.useEffect(() => {
+    async function fetchYieldHistory() {
+      try {
+        const res = await fetch('http://localhost:8000/api/yield/history');
+        const data = await res.json();
+        if (data.records && data.records.length > 0) {
+          data.records.forEach((rec: any) => {
+            if (rec.harvest_date && rec.harvested_kg) {
+              const d = new Date(rec.harvest_date);
+              const mIdx = d.getMonth();
+              setLoggedHarvests((prev) =>
+                prev.map((item, idx) =>
+                  idx === mIdx
+                    ? {
+                        ...item,
+                        actual: rec.harvested_kg,
+                        dateRange: rec.notes || rec.harvest_date,
+                      }
+                    : item
+                )
+              );
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('MongoDB yield history fetch fallback:', e);
+      }
+    }
+    fetchYieldHistory();
+  }, []);
+
+  const handleLogHarvest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!harvestInput.weightKg) return;
 
@@ -58,6 +90,7 @@ export function YieldPredictionPage() {
     const startStr = startObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const endStr = endObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const dateRangeLabel = `${startStr} - ${endStr}`;
+    const weightVal = Number(harvestInput.weightKg);
 
     const targetMonthIndex = startObj.getMonth(); // 0 = Jan, 1 = Feb, ..., 11 = Dec
 
@@ -66,12 +99,31 @@ export function YieldPredictionPage() {
         idx === targetMonthIndex
           ? {
               ...item,
-              actual: Number(harvestInput.weightKg),
+              actual: weightVal,
               dateRange: dateRangeLabel,
             }
           : item
       )
     );
+
+    // Save entry to MongoDB Database
+    try {
+      await fetch('http://localhost:8000/api/yield/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plot_id: 'plot-main',
+          plot_name: 'High-Range Cardamom Estate',
+          year: '2026',
+          harvested_kg: weightVal,
+          quality_grade: '8.2mm Extra Bold Grade A',
+          harvest_date: harvestInput.startDate,
+          notes: dateRangeLabel,
+        }),
+      });
+    } catch (e) {
+      console.warn('MongoDB yield record log fallback:', e);
+    }
 
     setIsModalOpen(false);
     setHarvestInput({ startDate: '2026-06-01', endDate: '2026-06-15', weightKg: '' });

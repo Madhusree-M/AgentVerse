@@ -214,7 +214,7 @@ export function WeatherPage() {
       {/* Agentverse Weather Risk Agent Evaluation Section */}
       {agentData && (
         <SectionCard
-          title="🌦️ Agentverse Weather Risk Analysis Agent Evaluation"
+          title="Agentverse Weather Risk Analysis Agent Evaluation"
           description={`Agent ID: ${agentData.agent_id} • Protocol: ${agentData.protocol}`}
           action={
             <Badge variant={risk?.overall_risk_score && risk.overall_risk_score > 40 ? 'warning' : 'emerald'}>
